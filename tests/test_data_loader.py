@@ -24,3 +24,32 @@ def test_download_returns_dataframe(monkeypatch):
     assert not df.empty
     assert set(df.columns) == {"ticker", "Date", "Open", "High", "Low", "Close", "Adj Close", "Volume"}
     assert df["ticker"].iloc[0] == "FAKE"
+
+
+def test_download_accepts_string_ticker_and_empty_dates(monkeypatch):
+    def fake_download(ticker, start, end, interval, progress):
+        assert ticker == "SINGLE"
+        assert start is None and end is None
+        dates = pd.date_range("2023-01-01", periods=1, freq="D")
+        return pd.DataFrame(
+            {
+                "Date": dates,
+                "Open": [1],
+                "High": [2],
+                "Low": [0],
+                "Close": [1.5],
+                "Adj Close": [1.5],
+                "Volume": [100],
+            }
+        ).set_index("Date")
+
+    monkeypatch.setattr("yfinance.download", fake_download)
+
+    df = download_ohlcv("SINGLE", start="", end="", interval="1d")
+    assert not df.empty
+    assert list(df["ticker"].unique()) == ["SINGLE"]
+
+
+def test_download_empty_tickers_returns_empty_df():
+    df = download_ohlcv([], start=None, end=None)
+    assert df.empty

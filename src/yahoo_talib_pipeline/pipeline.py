@@ -10,11 +10,11 @@ from .indicators import compute_indicators
 
 
 def run_pipeline(
-    tickers: Iterable[str],
-    start: str,
-    end: str,
+    tickers: Iterable[str] | str,
+    start: str | None,
+    end: str | None,
     interval: str,
-    indicators: Iterable[str],
+    indicators: Iterable[str] | None,
     data_dir: Path | None = None,
 ) -> None:
     """Run the complete pipeline: download, save, compute indicators, save again."""
@@ -28,5 +28,6 @@ def run_pipeline(
     prices_df = download_ohlcv(tickers, start=start, end=end, interval=interval)
     save_to_csv(prices_df, prices_path)
 
-    enriched_df = compute_indicators(prices_df, indicators)
+    indicators = list(indicators or [])
+    enriched_df = compute_indicators(prices_df, indicators) if indicators else prices_df
     save_to_csv(enriched_df, prices_with_ind_path)

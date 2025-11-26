@@ -1,13 +1,37 @@
 """Functions for downloading and saving OHLCV data."""
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, Sequence
 
 import pandas as pd
 import yfinance as yf
 
 
-def download_ohlcv(tickers: Iterable[str], start: str, end: str, interval: str = "1d") -> pd.DataFrame:
+def _normalize_tickers(tickers: Iterable[str] | str) -> list[str]:
+    """Coerce tickers into a list, handling the common case of a single string."""
+
+    if isinstance(tickers, str):
+        tickers = [tickers]
+    if isinstance(tickers, Sequence):
+        return [t for t in tickers if t]
+    return [t for t in list(tickers) if t]
+
+
+def _normalize_date(value: str | None) -> str | None:
+    """Treat empty strings as missing to align with yfinance defaults."""
+
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
+
+
+def download_ohlcv(
+    tickers: Iterable[str] | str,
+    start: str | None = None,
+    end: str | None = None,
+    interval: str = "1d",
+) -> pd.DataFrame:
     """
     Download OHLCV data for the given tickers and date range.
 
@@ -21,8 +45,15 @@ def download_ohlcv(tickers: Iterable[str], start: str, end: str, interval: str =
         Combined DataFrame with OHLCV columns and an extra "ticker" column.
     """
 
+    tickers_list = _normalize_tickers(tickers)
+    start = _normalize_date(start)
+    end = _normalize_date(end)
+
+    if not tickers_list:
+        return pd.DataFrame(columns=["ticker", "Date", "Open", "High", "Low", "Close", "Adj Close", "Volume"])
+
     frames: list[pd.DataFrame] = []
-    for ticker in tickers:
+    for ticker in tickers_list:
         data = yf.download(ticker, start=start, end=end, interval=interval, progress=False)
         if data.empty:
             continue
