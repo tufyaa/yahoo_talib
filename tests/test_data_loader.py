@@ -4,7 +4,7 @@ from yahoo_talib_pipeline.data_loader import download_ohlcv
 
 
 def test_download_returns_dataframe(monkeypatch):
-    def fake_download(ticker, start, end, interval, progress):
+    def fake_download(ticker, start, end, interval, progress, **kwargs):
         dates = pd.date_range("2023-01-01", periods=3, freq="D")
         return pd.DataFrame(
             {
@@ -27,7 +27,7 @@ def test_download_returns_dataframe(monkeypatch):
 
 
 def test_download_accepts_string_ticker_and_empty_dates(monkeypatch):
-    def fake_download(ticker, start, end, interval, progress):
+    def fake_download(ticker, start, end, interval, progress, **kwargs):
         assert ticker == "SINGLE"
         assert start is None and end is None
         dates = pd.date_range("2023-01-01", periods=1, freq="D")
@@ -52,4 +52,9 @@ def test_download_accepts_string_ticker_and_empty_dates(monkeypatch):
 
 def test_download_empty_tickers_returns_empty_df():
     df = download_ohlcv([], start=None, end=None)
+    assert df.empty
+
+
+def test_download_handles_none_tickers():
+    df = download_ohlcv(None, start=None, end=None)
     assert df.empty

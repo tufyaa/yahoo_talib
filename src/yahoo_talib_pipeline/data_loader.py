@@ -10,6 +10,8 @@ import yfinance as yf
 def _normalize_tickers(tickers: Iterable[str] | str) -> list[str]:
     """Coerce tickers into a list, handling the common case of a single string."""
 
+    if tickers is None:
+        return []
     if isinstance(tickers, str):
         tickers = [tickers]
     if isinstance(tickers, Sequence):
@@ -24,6 +26,16 @@ def _normalize_date(value: str | None) -> str | None:
         return None
     value = value.strip()
     return value or None
+
+
+def _flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Flatten any MultiIndex columns produced by yfinance."""
+
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
+    else:
+        df.columns = [str(col) for col in df.columns]
+    return df
 
 
 def download_ohlcv(
@@ -54,10 +66,18 @@ def download_ohlcv(
 
     frames: list[pd.DataFrame] = []
     for ticker in tickers_list:
-        data = yf.download(ticker, start=start, end=end, interval=interval, progress=False)
+        data = yf.download(
+            ticker,
+            start=start,
+            end=end,
+            interval=interval,
+            progress=False,
+            group_by="column",
+            auto_adjust=False,
+        )
         if data.empty:
             continue
-        data = data.reset_index().rename(columns={"Adj Close": "Adj Close"})
+        data = _flatten_columns(data).reset_index()
         data.insert(0, "ticker", ticker)
         frames.append(data)
 
