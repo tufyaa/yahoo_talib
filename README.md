@@ -26,7 +26,7 @@ project_root/
 
 - **config.py**: Shared configuration with data paths.
 - **data_loader.py**: Functions to download OHLCV data and save to CSV.
-- **indicators.py**: TA-Lib indicator calculations.
+- **indicators.py**: TA-Lib indicator calculations (15 indicators supported).
 - **pipeline.py**: End-to-end orchestration of download and indicator computation.
 - **cli.py**: Command-line argument parsing.
 - **main.py**: Entry point that executes the full pipeline.
@@ -49,15 +49,35 @@ python -m yahoo_talib_pipeline.main --tickers AAPL --start 2023-01-01 --end 2023
 
 Multiple tickers:
 ```bash
-python -m yahoo_talib_pipeline.main --tickers AAPL,MSFT,GOOG --start 2023-01-01 --end 2023-01-31 --indicators RSI,MACD
+python -m yahoo_talib_pipeline.main --tickers AAPL,MSFT,GOOG --start 2023-01-01 --end 2023-01-31 --indicators RSI,MACD,ATR_14
 ```
 
 Custom interval and indicators:
 ```bash
-python -m yahoo_talib_pipeline.main --tickers TSLA,NVDA --start 2023-01-01 --end 2023-02-01 --interval 1h --indicators RSI,SMA_10,EMA_50
+python -m yahoo_talib_pipeline.main --tickers TSLA,NVDA --start 2023-01-01 --end 2023-02-01 --interval 1h --indicators RSI,SMA_10,EMA_50,BBANDS_20
 ```
 
 The pipeline will produce `data/prices.csv` and `data/prices_with_indicators.csv`.
+
+## Supported Indicators
+
+All indicator names are passed via `--indicators` as comma-separated tokens. Period-based indicators use the suffix `_N` to denote the timeperiod. The project currently supports 15 TA-Lib indicators:
+
+- SMA_`N`
+- EMA_`N`
+- WMA_`N`
+- DEMA_`N`
+- TEMA_`N`
+- KAMA_`N`
+- ATR_`N`
+- ADX_`N`
+- CCI_`N`
+- ROC_`N`
+- MOM_`N`
+- BBANDS_`N`
+- RSI
+- MACD
+- OBV
 
 ## Tests
 Run all tests with:
