@@ -19,7 +19,8 @@ def run_pipeline(
 ) -> None:
     """Run the complete pipeline: download, save, compute indicators, save again."""
 
-    target_dir = data_dir or config.DATA_DIR
+    # Accept either Path or string for the output directory to be resilient to caller inputs
+    target_dir = config.DATA_DIR if data_dir is None else Path(data_dir)
     target_dir.mkdir(parents=True, exist_ok=True)
 
     prices_path = target_dir / config.PRICES_CSV.name

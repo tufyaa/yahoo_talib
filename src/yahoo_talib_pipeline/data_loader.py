@@ -1,6 +1,7 @@
 """Functions for downloading and saving OHLCV data."""
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Iterable, Sequence
 
 import pandas as pd
@@ -98,4 +99,6 @@ def save_to_csv(df: pd.DataFrame, path: str | bytes | None) -> None:
 
     if path is None:
         raise ValueError("Path to save CSV cannot be None.")
-    pd.DataFrame(df).to_csv(path, index=False)
+    path_obj = Path(path)
+    path_obj.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(df).to_csv(path_obj, index=False)
