@@ -144,16 +144,22 @@ def _apply_indicator(df: pd.DataFrame, indicator: str) -> pd.DataFrame:
     return df
 
 
-def compute_indicators(df: pd.DataFrame, indicators: Iterable[str]) -> pd.DataFrame:
+def compute_indicators(df: pd.DataFrame | list, indicators: Iterable[str]) -> pd.DataFrame:
     """Compute TA-Lib indicators for each ticker.
 
     Args:
-        df: Input OHLCV DataFrame with a "ticker" column.
+        df: Input OHLCV DataFrame with a "ticker" column, or a list of records.
         indicators: Iterable of indicator identifiers (e.g., "RSI", "SMA_20").
 
     Returns:
         DataFrame with indicator columns appended per ticker.
     """
+
+    # Handle list input (e.g., from JSON/MCP requests)
+    if isinstance(df, list):
+        if not df:
+            return pd.DataFrame()
+        df = pd.DataFrame(df)
 
     if df.empty:
         return df

@@ -29,6 +29,14 @@ def _normalize_date(value: str | None) -> str | None:
     return value or None
 
 
+def _normalize_interval(value: str | None) -> str:
+    """Ensure interval has a valid default value."""
+
+    if value is None or not value.strip():
+        return "1d"
+    return value.strip()
+
+
 def _flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Flatten any MultiIndex columns produced by yfinance."""
 
@@ -61,6 +69,7 @@ def download_ohlcv(
     tickers_list = _normalize_tickers(tickers)
     start = _normalize_date(start)
     end = _normalize_date(end)
+    interval = _normalize_interval(interval)
 
     if not tickers_list:
         return pd.DataFrame(columns=["ticker", "Date", "Open", "High", "Low", "Close", "Adj Close", "Volume"])
